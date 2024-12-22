@@ -37,6 +37,9 @@ declare -a IGNORE_PATTERNS=(
     # Документация
     "docs/*"
     "*.md"
+    "*gradle*"
+    "*.sh"
+    "*.bat"
 )
 
 # Счетчики для статистики
