@@ -27,6 +27,6 @@ object YandexDiskModule {
     fun provideYandexDiskRepository(
         restClient: RestClient
     ): YandexDiskRepository {
-        return YandexDiskRepositoryImpl(restClient)
+        return YandexDiskRepositoryImpl(restClient, authRepository)
     }
 }
