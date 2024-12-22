@@ -25,8 +25,10 @@ object YandexDiskModule {
     @Provides
     @Singleton
     fun provideYandexDiskRepository(
-        restClient: RestClient
+        restClient: RestClient,
+        authRepository: AuthRepository // <-- Добавляем второй параметр
     ): YandexDiskRepository {
         return YandexDiskRepositoryImpl(restClient, authRepository)
     }
 }
+
