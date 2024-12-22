@@ -13,7 +13,6 @@
             <option value="$PROJECT_DIR$/quick-docs-qr/app" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

@@ -1,3 +1,14 @@
+#!/bin/bash
+
+# Создаем основные директории
+mkdir -p app/src/main/java/com/example/yandexdiskqr/data/local
+mkdir -p app/src/main/java/com/example/yandexdiskqr/data/repository
+mkdir -p app/src/main/java/com/example/yandexdiskqr/domain/repository
+mkdir -p app/src/main/java/com/example/yandexdiskqr/di
+mkdir -p app/src/main/res/values
+
+# Исправляем build.gradle.kts
+cat > ./app/build.gradle.kts << 'EOL'
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -76,3 +87,36 @@ dependencies {
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
+EOL
+
+# Исправляем корневой build.gradle.kts
+cat > ./build.gradle.kts << 'EOL'
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.48")
+    }
+}
+
+tasks.register("clean", Delete::class) {
+    delete(rootProject.buildDir)
+}
+EOL
+
+# Исправляем Constants.kt
+cat > ./app/src/main/java/com/example/yandexdiskqr/di/Constants.kt << 'EOL'
+package com.example.yandexdiskqr.di
+
+object Constants {
+    // Замените на реальный CLIENT_ID из консоли разработчика Яндекс
+    const val CLIENT_ID = "your_client_id_here"
+    const val REDIRECT_URI = "ydiskqr://auth"
+    const val OAUTH_URL = "https://oauth.yandex.ru/authorize"
+    const val TOKEN_URL = "https://oauth.yandex.ru/token"
+}
+EOL
