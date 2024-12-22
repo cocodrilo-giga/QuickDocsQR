@@ -1,11 +1,10 @@
 package com.example.yandexdiskqr.data.repository
 
+import com.example.yandexdiskqr.data.local.AuthDataStore
+import com.example.yandexdiskqr.data.model.AuthToken
 import com.example.yandexdiskqr.di.Constants
-import com.example.yandexdiskqr.domain.model.TokenResponse
 import com.example.yandexdiskqr.domain.repository.AuthRepository
-import com.example.yandexdiskqr.security.AuthManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -15,15 +14,16 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val authManager: AuthManager
+    private val authDataStore: AuthDataStore
 ) : AuthRepository {
 
     override suspend fun getAuthToken(): String = withContext(Dispatchers.IO) {
-        when (val state = authManager.checkAuthState().first()) {
-            is AuthState.Authorized -> state.token
-            is AuthState.NeedsRefresh -> refreshToken(state.refreshToken)
-            AuthState.Unauthorized -> throw IllegalStateException("Unauthorized")
+        val token = authDataStore.getAccessToken()
+        // При необходимости можно проверить "протух" ли токен (сравнив expiresIn), но пока упрощённо:
+        if (token.isNullOrEmpty()) {
+            throw IllegalStateException("Unauthorized: no access token found")
         }
+        token
     }
 
     override suspend fun exchangeCodeForToken(code: String) {
@@ -31,38 +31,46 @@ class AuthRepositoryImpl @Inject constructor(
             grantType = "authorization_code",
             code = code
         )
-        authManager.saveTokens(
+        authDataStore.saveTokens(
             accessToken = tokenResponse.accessToken,
             refreshToken = tokenResponse.refreshToken,
-            expiresIn = tokenResponse.expiresIn.toLong()
+            expiresIn = tokenResponse.expiresIn,
+            tokenType = tokenResponse.tokenType
         )
     }
 
-    override suspend fun clearAuth() {
-        authManager.clearAuth()
-    }
+    override suspend fun refreshToken(): AuthToken {
+        val refreshToken = authDataStore.getRefreshToken()
+            ?: throw IllegalStateException("Unauthorized: no refresh token found")
 
-    private suspend fun refreshToken(refreshToken: String): String {
         val tokenResponse = requestToken(
             grantType = "refresh_token",
             refreshToken = refreshToken
         )
-        authManager.saveTokens(
+        authDataStore.saveTokens(
             accessToken = tokenResponse.accessToken,
             refreshToken = tokenResponse.refreshToken,
-            expiresIn = tokenResponse.expiresIn.toLong()
+            expiresIn = tokenResponse.expiresIn,
+            tokenType = tokenResponse.tokenType
         )
-        return tokenResponse.accessToken
+        return tokenResponse
     }
 
+    override suspend fun clearAuth() {
+        authDataStore.clearTokens()
+    }
+
+    /**
+     * Запрос токена или его обновление (refresh).
+     */
     private suspend fun requestToken(
         grantType: String,
         code: String? = null,
         refreshToken: String? = null
-    ): TokenResponse = withContext(Dispatchers.IO) {
+    ): AuthToken = withContext(Dispatchers.IO) {
         val url = URL(Constants.TOKEN_URL)
         val connection = url.openConnection() as HttpURLConnection
-        
+
         try {
             connection.requestMethod = "POST"
             connection.doOutput = true
@@ -72,7 +80,7 @@ class AuthRepositoryImpl @Inject constructor(
                 append("grant_type=$grantType")
                 append("&client_id=${Constants.CLIENT_ID}")
                 append("&client_secret=${Constants.CLIENT_SECRET}")
-                
+
                 when (grantType) {
                     "authorization_code" -> {
                         append("&code=$code")
@@ -91,10 +99,10 @@ class AuthRepositoryImpl @Inject constructor(
             val response = connection.inputStream.bufferedReader().use { it.readText() }
             val jsonResponse = JSONObject(response)
 
-            TokenResponse(
+            AuthToken(
                 accessToken = jsonResponse.getString("access_token"),
                 refreshToken = jsonResponse.getString("refresh_token"),
-                expiresIn = jsonResponse.getInt("expires_in"),
+                expiresIn = jsonResponse.getLong("expires_in"),
                 tokenType = jsonResponse.getString("token_type")
             )
         } finally {
