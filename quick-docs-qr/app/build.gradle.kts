@@ -62,7 +62,7 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
     
     // Яндекс.Диск SDK
-    implementation("com.yandex.android:disk-sdk:1.0")
+    implementation("com.yandex.android:disk-restapi-sdk:1.03")
     
     // QR code scanning
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
