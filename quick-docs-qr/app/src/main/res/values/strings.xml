@@ -18,3 +18,7 @@
     <string name="loading">Загрузка...</string>
     <string name="no_files">В этой папке нет файлов</string>
 </resources>
+    <string name="camera_permission_required">Для сканирования QR-кодов необходим доступ к камере</string>
+    <string name="grant_permission">Предоставить доступ</string>
+    <string name="flash_on">Включить вспышку</string>
+    <string name="flash_off">Выключить вспышку</string>
