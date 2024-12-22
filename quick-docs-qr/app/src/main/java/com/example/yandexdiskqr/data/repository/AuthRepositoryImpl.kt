@@ -1,11 +1,11 @@
 package com.example.yandexdiskqr.data.repository
 
-import android.net.Uri
-import com.example.yandexdiskqr.data.local.AuthDataStore
 import com.example.yandexdiskqr.di.Constants
 import com.example.yandexdiskqr.domain.model.TokenResponse
 import com.example.yandexdiskqr.domain.repository.AuthRepository
+import com.example.yandexdiskqr.security.AuthManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -15,21 +15,51 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val authDataStore: AuthDataStore
+    private val authManager: AuthManager
 ) : AuthRepository {
 
-    override suspend fun getAuthToken(): String = authDataStore.getToken()
+    override suspend fun getAuthToken(): String = withContext(Dispatchers.IO) {
+        when (val state = authManager.checkAuthState().first()) {
+            is AuthState.Authorized -> state.token
+            is AuthState.NeedsRefresh -> refreshToken(state.refreshToken)
+            AuthState.Unauthorized -> throw IllegalStateException("Unauthorized")
+        }
+    }
 
     override suspend fun exchangeCodeForToken(code: String) {
-        val tokenResponse = requestToken(code)
-        authDataStore.saveToken(tokenResponse.accessToken)
+        val tokenResponse = requestToken(
+            grantType = "authorization_code",
+            code = code
+        )
+        authManager.saveTokens(
+            accessToken = tokenResponse.accessToken,
+            refreshToken = tokenResponse.refreshToken,
+            expiresIn = tokenResponse.expiresIn.toLong()
+        )
     }
 
     override suspend fun clearAuth() {
-        authDataStore.clearToken()
+        authManager.clearAuth()
     }
 
-    private suspend fun requestToken(code: String): TokenResponse = withContext(Dispatchers.IO) {
+    private suspend fun refreshToken(refreshToken: String): String {
+        val tokenResponse = requestToken(
+            grantType = "refresh_token",
+            refreshToken = refreshToken
+        )
+        authManager.saveTokens(
+            accessToken = tokenResponse.accessToken,
+            refreshToken = tokenResponse.refreshToken,
+            expiresIn = tokenResponse.expiresIn.toLong()
+        )
+        return tokenResponse.accessToken
+    }
+
+    private suspend fun requestToken(
+        grantType: String,
+        code: String? = null,
+        refreshToken: String? = null
+    ): TokenResponse = withContext(Dispatchers.IO) {
         val url = URL(Constants.TOKEN_URL)
         val connection = url.openConnection() as HttpURLConnection
         
@@ -38,16 +68,24 @@ class AuthRepositoryImpl @Inject constructor(
             connection.doOutput = true
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
 
-            val postData = Uri.Builder()
-                .appendQueryParameter("grant_type", "authorization_code")
-                .appendQueryParameter("code", code)
-                .appendQueryParameter("client_id", Constants.CLIENT_ID)
-                .appendQueryParameter("client_secret", Constants.CLIENT_SECRET)
-                .build()
-                .query
+            val postData = buildString {
+                append("grant_type=$grantType")
+                append("&client_id=${Constants.CLIENT_ID}")
+                append("&client_secret=${Constants.CLIENT_SECRET}")
+                
+                when (grantType) {
+                    "authorization_code" -> {
+                        append("&code=$code")
+                        append("&redirect_uri=${Constants.REDIRECT_URI}")
+                    }
+                    "refresh_token" -> {
+                        append("&refresh_token=$refreshToken")
+                    }
+                }
+            }
 
             connection.outputStream.use { os ->
-                os.write(postData?.toByteArray() ?: byteArrayOf())
+                os.write(postData.toByteArray())
             }
 
             val response = connection.inputStream.bufferedReader().use { it.readText() }
@@ -55,6 +93,7 @@ class AuthRepositoryImpl @Inject constructor(
 
             TokenResponse(
                 accessToken = jsonResponse.getString("access_token"),
+                refreshToken = jsonResponse.getString("refresh_token"),
                 expiresIn = jsonResponse.getInt("expires_in"),
                 tokenType = jsonResponse.getString("token_type")
             )

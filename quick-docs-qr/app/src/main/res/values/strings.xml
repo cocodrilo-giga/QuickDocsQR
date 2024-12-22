@@ -28,3 +28,8 @@
     <string name="camera_permission_required">Для сканирования QR-кода необходимо разрешение на использование камеры</string>
     <string name="error_invalid_qr">Некорректный QR-код</string>
     <string name="error_folder_not_found">Папка не найдена</string>
+    <string name="error_unauthorized">Необходима повторная авторизация</string>
+    <string name="error_server">Ошибка сервера. Попробуйте позже</string>
+    <string name="error_network">Проверьте подключение к интернету</string>
+    <string name="error_unknown">Произошла неизвестная ошибка</string>
+    <string name="retry">Повторить</string>
