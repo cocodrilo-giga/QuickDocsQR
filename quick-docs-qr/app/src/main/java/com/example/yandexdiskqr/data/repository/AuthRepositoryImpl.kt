@@ -1,89 +1,65 @@
 package com.example.yandexdiskqr.data.repository
 
-import com.example.yandexdiskqr.data.model.AuthToken
+import android.net.Uri
+import com.example.yandexdiskqr.data.local.AuthDataStore
 import com.example.yandexdiskqr.di.Constants
+import com.example.yandexdiskqr.domain.model.TokenResponse
 import com.example.yandexdiskqr.domain.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val secureStorage: SecureStorageImpl
+    private val authDataStore: AuthDataStore
 ) : AuthRepository {
 
-    override suspend fun getAuthToken(): String {
-        return secureStorage.getToken() ?: throw IllegalStateException("No auth token found")
-    }
+    override suspend fun getAuthToken(): String = authDataStore.getToken()
 
     override suspend fun exchangeCodeForToken(code: String) {
-        val token = withContext(Dispatchers.IO) {
-            val url = URL(Constants.TOKEN_URL)
-            val connection = url.openConnection()
-            connection.doOutput = true
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-
-            val postData = """
-                grant_type=authorization_code
-                &code=$code
-                &client_id=${Constants.CLIENT_ID}
-                &client_secret=${Constants.CLIENT_SECRET}
-                &redirect_uri=${Constants.REDIRECT_URI}
-            """.trimIndent().replace("\n", "")
-
-            connection.getOutputStream().use { it.write(postData.toByteArray()) }
-
-            val response = connection.getInputStream().bufferedReader().use { it.readText() }
-            parseTokenResponse(response)
-        }
-
-        secureStorage.saveToken(token.accessToken)
-        secureStorage.saveRefreshToken(token.refreshToken)
-    }
-
-    override suspend fun refreshToken(): AuthToken {
-        return withContext(Dispatchers.IO) {
-            val refreshToken = secureStorage.getRefreshToken() 
-                ?: throw IllegalStateException("No refresh token found")
-
-            val url = URL(Constants.TOKEN_URL)
-            val connection = url.openConnection()
-            connection.doOutput = true
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-
-            val postData = """
-                grant_type=refresh_token
-                &refresh_token=$refreshToken
-                &client_id=${Constants.CLIENT_ID}
-                &client_secret=${Constants.CLIENT_SECRET}
-            """.trimIndent().replace("\n", "")
-
-            connection.getOutputStream().use { it.write(postData.toByteArray()) }
-
-            val response = connection.getInputStream().bufferedReader().use { it.readText() }
-            val token = parseTokenResponse(response)
-            
-            secureStorage.saveToken(token.accessToken)
-            secureStorage.saveRefreshToken(token.refreshToken)
-            
-            token
-        }
+        val tokenResponse = requestToken(code)
+        authDataStore.saveToken(tokenResponse.accessToken)
     }
 
     override suspend fun clearAuth() {
-        secureStorage.clearTokens()
+        authDataStore.clearToken()
     }
 
-    private fun parseTokenResponse(response: String): AuthToken {
-        val json = JSONObject(response)
-        return AuthToken(
-            accessToken = json.getString("access_token"),
-            expiresIn = json.getLong("expires_in"),
-            refreshToken = json.getString("refresh_token"),
-            tokenType = json.getString("token_type")
-        )
+    private suspend fun requestToken(code: String): TokenResponse = withContext(Dispatchers.IO) {
+        val url = URL(Constants.TOKEN_URL)
+        val connection = url.openConnection() as HttpURLConnection
+        
+        try {
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+
+            val postData = Uri.Builder()
+                .appendQueryParameter("grant_type", "authorization_code")
+                .appendQueryParameter("code", code)
+                .appendQueryParameter("client_id", Constants.CLIENT_ID)
+                .appendQueryParameter("client_secret", Constants.CLIENT_SECRET)
+                .build()
+                .query
+
+            connection.outputStream.use { os ->
+                os.write(postData?.toByteArray() ?: byteArrayOf())
+            }
+
+            val response = connection.inputStream.bufferedReader().use { it.readText() }
+            val jsonResponse = JSONObject(response)
+
+            TokenResponse(
+                accessToken = jsonResponse.getString("access_token"),
+                expiresIn = jsonResponse.getInt("expires_in"),
+                tokenType = jsonResponse.getString("token_type")
+            )
+        } finally {
+            connection.disconnect()
+        }
     }
 }

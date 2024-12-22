@@ -22,3 +22,9 @@
     <string name="grant_permission">Предоставить доступ</string>
     <string name="flash_on">Включить вспышку</string>
     <string name="flash_off">Выключить вспышку</string>
+    <string name="qr_code_title">QR-код для папки</string>
+    <string name="share_qr_code">Поделиться QR-кодом</string>
+    <string name="close">Закрыть</string>
+    <string name="camera_permission_required">Для сканирования QR-кода необходимо разрешение на использование камеры</string>
+    <string name="error_invalid_qr">Некорректный QR-код</string>
+    <string name="error_folder_not_found">Папка не найдена</string>
