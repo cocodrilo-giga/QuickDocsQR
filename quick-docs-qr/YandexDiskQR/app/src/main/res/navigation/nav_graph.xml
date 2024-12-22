@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/foldersFragment">
+
+    <fragment
+        android:id="@+id/foldersFragment"
+        android:name="com.example.yandexdiskqr.presentation.folders.FoldersFragment"
+        android:label="@string/folders">
+        <action
+            android:id="@+id/action_folders_to_qr"
+            app:destination="@id/qrGeneratorFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scannerFragment"
+        android:name="com.example.yandexdiskqr.presentation.scanner.ScannerFragment"
+        android:label="@string/scanner">
+        <action
+            android:id="@+id/action_scanner_to_viewer"
+            app:destination="@id/viewerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/viewerFragment"
+        android:name="com.example.yandexdiskqr.presentation.viewer.ViewerFragment"
+        android:label="@string/viewer">
+        <argument
+            android:name="folderPath"
+            app:argType="string" />
+    </fragment>
+
+</navigation>

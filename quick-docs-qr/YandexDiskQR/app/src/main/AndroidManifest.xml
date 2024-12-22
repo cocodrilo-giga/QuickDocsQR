@@ -15,12 +15,25 @@
         android:theme="@style/Theme.YandexDiskQR">
         
         <activity
-            android:name=".presentation.MainActivity"
+            android:name=".presentation.auth.AuthActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="auth"
+                    android:scheme="ydiskqr" />
+            </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".presentation.MainActivity"
+            android:exported="false" />
     </application>
 </manifest>
