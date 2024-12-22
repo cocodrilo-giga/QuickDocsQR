@@ -2,6 +2,12 @@
 
 cd YandexDiskQR
 
+# Создание необходимых директорий
+mkdir -p app/src/main/java/com/example/yandexdiskqr/data/model
+mkdir -p app/src/main/java/com/example/yandexdiskqr/data/repository
+mkdir -p app/src/main/java/com/example/yandexdiskqr/domain/repository
+mkdir -p app/src/main/java/com/example/yandexdiskqr/domain/usecase
+
 # Создание файлов данных
 cat > app/src/main/java/com/example/yandexdiskqr/data/model/YandexDiskFolder.kt << 'EOL'
 package com.example.yandexdiskqr.data.model
