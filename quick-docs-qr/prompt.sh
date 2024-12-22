@@ -40,6 +40,7 @@ declare -a IGNORE_PATTERNS=(
     "*gradle*"
     "*.sh"
     "*.bat"
+    "Unconfirmed*"
 )
 
 # Счетчики для статистики
