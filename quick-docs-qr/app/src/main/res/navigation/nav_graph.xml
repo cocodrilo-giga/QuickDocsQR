@@ -31,4 +31,8 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/qrGeneratorFragment"
+        android:name="com.example.yandexdiskqr.presentation.qr.QRGeneratorFragment"
+        android:label="@string/generate_qr" />
 </navigation>

@@ -41,6 +41,9 @@ declare -a IGNORE_PATTERNS=(
     "*.sh"
     "*.bat"
     "Unconfirmed*"
+    "*/build/*"
+    "*.webp"
+    "*.png"
 )
 
 # Счетчики для статистики
