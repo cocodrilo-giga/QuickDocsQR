@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YandexDisk QR</string>
+    <string name="folders">Папки</string>
+    <string name="scanner">Сканер</string>
+    <string name="viewer">Просмотр</string>
+    <string name="generate_qr">Создать QR-код</string>
+    <string name="scan_qr">Отсканируйте QR-код для просмотра документов</string>
+    <string name="error_loading_folder">Ошибка загрузки папки</string>
+    <string name="error_scanning">Ошибка сканирования</string>
+    <string name="error_generating_qr">Ошибка создания QR-кода</string>
+    <string name="sign_in_with_yandex">Войти через Яндекс</string>
+    <string name="auth_error">Ошибка авторизации</string>
+    <string name="qr_code_title">QR-код для папки</string>
+    <string name="qr_code_hint">Отсканируйте этот QR-код для быстрого доступа к документам</string>
+    <string name="close">Закрыть</string>
+    <string name="retry">Повторить</string>
+    <string name="loading">Загрузка...</string>
+    <string name="no_files">В этой папке нет файлов</string>
+</resources>
+    <string name="camera_permission_required">Для сканирования QR-кодов необходим доступ к камере</string>
+    <string name="grant_permission">Предоставить доступ</string>
+    <string name="flash_on">Включить вспышку</string>
+    <string name="flash_off">Выключить вспышку</string>
+    <string name="qr_code_title">QR-код для папки</string>
+    <string name="share_qr_code">Поделиться QR-кодом</string>
+    <string name="close">Закрыть</string>
+    <string name="camera_permission_required">Для сканирования QR-кода необходимо разрешение на использование камеры</string>
+    <string name="error_invalid_qr">Некорректный QR-код</string>
+    <string name="error_folder_not_found">Папка не найдена</string>
+    <string name="error_unauthorized">Необходима повторная авторизация</string>
+    <string name="error_server">Ошибка сервера. Попробуйте позже</string>
+    <string name="error_network">Проверьте подключение к интернету</string>
+    <string name="error_unknown">Произошла неизвестная ошибка</string>
+    <string name="retry">Повторить</string>
