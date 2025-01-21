@@ -36,10 +36,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "21"
-        freeCompilerArgs += listOf(
-            "--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-            "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED"
-        )
     }
 
     buildToolsVersion = "35.0.0"
