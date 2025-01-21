@@ -5,9 +5,10 @@ import com.example.yandexdiskqr.data.model.YandexDiskFile
 import com.example.yandexdiskqr.data.model.YandexDiskFolder
 import com.example.yandexdiskqr.domain.repository.AuthRepository
 import com.example.yandexdiskqr.domain.repository.YandexDiskRepository
+import com.yandex.disk.rest.ResourcesArgs
 import com.yandex.disk.rest.RestClient
 import com.yandex.disk.rest.exceptions.ServerIOException
-import com.yandex.disk.rest.exceptions.UnauthorizedException
+import com.yandex.disk.rest.exceptions.http.UnauthorizedException
 import com.yandex.disk.rest.json.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,27 +22,31 @@ class YandexDiskRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository
 ) : YandexDiskRepository {
 
-    override suspend fun getFolderContent(path: String): Result<YandexDiskFolder> = 
+    override suspend fun getFolderContent(path: String): Result<YandexDiskFolder> =
         withContext(Dispatchers.IO) {
             try {
-                val response = restClient.getResources(path, 100)  // Увеличиваем лимит
-                val resource = response.resourceList
+                val args = ResourcesArgs.Builder()
+                    .setPath(path)
+                    .setLimit(100)
+                    .build()
+
+                val response = restClient.getResources(args)
 
                 Result.success(YandexDiskFolder(
-                    path = resource.path.path,
-                    name = resource.name,
-                    files = resource.items.map { it.toYandexDiskFile() }
+                    path = response.path.path,
+                    name = response.name,
+                    files = response.resourceList.items.map { it.toYandexDiskFile() }
                 ))
             } catch (e: Exception) {
                 Result.failure(handleDiskException(e))
             }
         }
 
-    override suspend fun downloadFile(path: String): Result<String> = 
+    override suspend fun downloadFile(path: String): Result<String> =
         withContext(Dispatchers.IO) {
             try {
                 val tempFile = createTempFile()
-                restClient.downloadFile(path, tempFile, null, null)
+                restClient.downloadFile(path, tempFile, null)
                 Result.success(tempFile.absolutePath)
             } catch (e: Exception) {
                 Result.failure(handleDiskException(e))
@@ -51,17 +56,16 @@ class YandexDiskRepositoryImpl @Inject constructor(
     private fun Resource.toYandexDiskFile() = YandexDiskFile(
         path = path.path,
         name = name,
-        mimeType = mimeType ?: "",
+        mimeType = mediaType ?: "",
         size = size
     )
+
 
     private suspend fun handleDiskException(e: Exception): DiskException {
         return when (e) {
             is UnauthorizedException -> {
                 try {
-                    // Пробуем обновить токен
                     authRepository.refreshToken()
-                    // Если обновление успешно, возвращаем ошибку для повторной попытки
                     DiskException.AuthError("Token refreshed, please retry")
                 } catch (refreshError: Exception) {
                     DiskException.AuthError("Authentication failed: ${refreshError.message}")
