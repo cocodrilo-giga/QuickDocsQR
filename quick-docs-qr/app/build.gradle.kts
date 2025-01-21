@@ -1,8 +1,9 @@
+// /app/build.gradle.kts
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") apply false
-    id("org.jetbrains.kotlin.kapt") apply false // Исправлено
-    id("com.google.dagger.hilt.android") apply false
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
