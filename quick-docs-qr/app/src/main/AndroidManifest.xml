@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.YandexDiskQR">
 
+        <!-- AuthActivity как Launcher -->
         <activity
             android:name=".presentation.auth.AuthActivity"
             android:exported="true">
@@ -30,14 +31,26 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:host="auth"
-                    android:scheme="ydiskqr" />
+                    android:scheme="ydiskqr"
+                    android:host="auth" />
             </intent-filter>
         </activity>
 
+        <!-- MainActivity без Launcher Intent Filter -->
         <activity
             android:name=".presentation.MainActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="ydiskqr"
+                    android:host="auth" />
+            </intent-filter>
+        </activity>
 
     </application>
 

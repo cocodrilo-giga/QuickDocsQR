@@ -1,50 +1,45 @@
+// ./src/main/java/com/example/yandexdiskqr/data/repository/SecureStorageImpl.kt
 package com.example.yandexdiskqr.data.repository
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
-import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.security.crypto.MasterKeys
+import com.example.yandexdiskqr.domain.repository.SecureStorage
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SecureStorageImpl @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
+    context: Context
+) : SecureStorage {
 
-    private val securePreferences = EncryptedSharedPreferences.create(
-        context,
+    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+
+    private val sharedPreferences = EncryptedSharedPreferences.create(
         "secure_prefs",
-        masterKey,
+        masterKeyAlias,
+        context,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    fun saveToken(token: String) {
-        securePreferences.edit().putString(KEY_ACCESS_TOKEN, token).apply()
+    override fun saveToken(token: String) {
+        sharedPreferences.edit().putString("access_token", token).apply()
     }
 
-    fun getToken(): String? {
-        return securePreferences.getString(KEY_ACCESS_TOKEN, null)
+    override fun getToken(): String? {
+        return sharedPreferences.getString("access_token", null)
     }
 
-    fun saveRefreshToken(token: String) {
-        securePreferences.edit().putString(KEY_REFRESH_TOKEN, token).apply()
+    override fun saveRefreshToken(refreshToken: String) {
+        sharedPreferences.edit().putString("refresh_token", refreshToken).apply()
     }
 
-    fun getRefreshToken(): String? {
-        return securePreferences.getString(KEY_REFRESH_TOKEN, null)
+    override fun getRefreshToken(): String? {
+        return sharedPreferences.getString("refresh_token", null)
     }
 
-    fun clearTokens() {
-        securePreferences.edit().clear().apply()
-    }
-
-    companion object {
-        private const val KEY_ACCESS_TOKEN = "access_token"
-        private const val KEY_REFRESH_TOKEN = "refresh_token"
+    override fun clearTokens() {
+        sharedPreferences.edit().clear().apply()
     }
 }

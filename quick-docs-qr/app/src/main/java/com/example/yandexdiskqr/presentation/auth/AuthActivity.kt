@@ -1,3 +1,4 @@
+// ./src/main/java/com/example/yandexdiskqr/presentation/auth/AuthActivity.kt
 package com.example.yandexdiskqr.presentation.auth
 
 import android.content.Intent
