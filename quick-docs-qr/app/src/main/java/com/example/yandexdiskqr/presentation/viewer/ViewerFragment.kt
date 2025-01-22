@@ -1,3 +1,4 @@
+// ./src/main/java/com/example/yandexdiskqr/presentation/viewer/ViewerFragment.kt
 package com.example.yandexdiskqr.presentation.viewer
 
 import android.os.Bundle
@@ -15,10 +16,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class ViewerFragment : Fragment() {
     private var _binding: FragmentViewerBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: ViewerViewModel by viewModels()
-    private val args: ViewerFragmentArgs by navArgs()
-    
+    private val args: ViewerFragmentArgs by navArgs() // Убедитесь в правильности импорта
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -30,14 +31,17 @@ class ViewerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         viewModel.loadFolder(args.folderPath)
         observeViewModel()
     }
 
     private fun observeViewModel() {
         viewModel.folder.observe(viewLifecycleOwner) { folder ->
-            // Update UI with folder contents
+            // Обновите UI с содержимым папки
+            // Например, обновите RecyclerView
+            // Пример:
+            // binding.recyclerView.adapter = YourAdapter(folder.files)
         }
 
         viewModel.error.observe(viewLifecycleOwner) { error ->

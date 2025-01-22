@@ -1,8 +1,9 @@
+// ./src/main/java/com/example/yandexdiskqr/di/AuthModule.kt
 package com.example.yandexdiskqr.di
 
 import android.content.Context
-import com.example.yandexdiskqr.data.local.AuthDataStore
 import com.example.yandexdiskqr.data.repository.AuthRepositoryImpl
+import com.example.yandexdiskqr.data.repository.SecureStorageImpl
 import com.example.yandexdiskqr.domain.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
@@ -17,13 +18,13 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthDataStore(
+    fun provideSecureStorage(
         @ApplicationContext context: Context
-    ): AuthDataStore = AuthDataStore(context)
+    ): SecureStorageImpl = SecureStorageImpl(context)
 
     @Provides
     @Singleton
     fun provideAuthRepository(
-        authDataStore: AuthDataStore
-    ): AuthRepository = AuthRepositoryImpl(authDataStore)
+        secureStorage: SecureStorageImpl
+    ): AuthRepository = AuthRepositoryImpl(secureStorage)
 }

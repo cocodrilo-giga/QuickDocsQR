@@ -1,9 +1,9 @@
+// ./src/main/java/com/example/yandexdiskqr/di/YandexDiskModule.kt
 package com.example.yandexdiskqr.di
 
 import com.example.yandexdiskqr.data.repository.YandexDiskRepositoryImpl
-import com.example.yandexdiskqr.domain.repository.AuthRepository
 import com.example.yandexdiskqr.domain.repository.YandexDiskRepository
-import com.yandex.disk.rest.RestClient
+import com.example.yandexdiskqr.domain.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,19 +16,9 @@ object YandexDiskModule {
 
     @Provides
     @Singleton
-    fun provideRestClient(
-        authRepository: AuthRepository
-    ): RestClient {
-        return RestClient(authRepository.getAuthToken())
-    }
-
-    @Provides
-    @Singleton
     fun provideYandexDiskRepository(
-        restClient: RestClient,
-        authRepository: AuthRepository // <-- Добавляем второй параметр
+        authRepository: AuthRepository
     ): YandexDiskRepository {
-        return YandexDiskRepositoryImpl(restClient, authRepository)
+        return YandexDiskRepositoryImpl(authRepository)
     }
 }
-

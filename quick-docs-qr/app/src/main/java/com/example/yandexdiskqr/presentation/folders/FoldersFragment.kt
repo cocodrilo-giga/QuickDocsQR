@@ -1,5 +1,7 @@
+// ./src/main/java/com/example/yandexdiskqr/presentation/folders/FoldersFragment.kt
 package com.example.yandexdiskqr.presentation.folders
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class FoldersFragment : Fragment() {
     private var _binding: FragmentFoldersBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: FoldersViewModel by viewModels()
     private val foldersAdapter = FoldersAdapter { folder ->
         viewModel.generateQRCode(folder.path)
@@ -33,10 +35,10 @@ class FoldersFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         setupRecyclerView()
         observeViewModel()
-        
+
         viewModel.loadFolders()
     }
 
@@ -58,9 +60,16 @@ class FoldersFragment : Fragment() {
             }
         }
 
-        viewModel.qrCodeGenerated.observe(viewLifecycleOwner) { bitmap ->
-            // Handle QR code generation result
+        viewModel.qrCodeData.observe(viewLifecycleOwner) { qrData ->
+            qrData?.let { (bitmap, path) ->
+                showQRCodeDialog(bitmap, path)
+            }
         }
+    }
+
+    private fun showQRCodeDialog(bitmap: Bitmap, path: String) {
+        // Создайте диалог для отображения QR-кода
+        QRDialog.newInstance(bitmap, path).show(parentFragmentManager, "QRDialog")
     }
 
     override fun onDestroyView() {

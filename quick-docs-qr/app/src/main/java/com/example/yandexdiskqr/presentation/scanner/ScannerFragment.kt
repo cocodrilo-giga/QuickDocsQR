@@ -1,3 +1,4 @@
+// ./src/main/java/com/example/yandexdiskqr/presentation/scanner/ScannerFragment.kt
 package com.example.yandexdiskqr.presentation.scanner
 
 import android.Manifest
@@ -7,7 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -24,12 +29,12 @@ import java.util.concurrent.Executors
 class ScannerFragment : Fragment() {
     private var _binding: FragmentScannerBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: ScannerViewModel by viewModels()
     private lateinit var cameraExecutor: ExecutorService
     private var camera: Camera? = null
     private var isScanning = true
-    
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -79,33 +84,33 @@ class ScannerFragment : Fragment() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        
+
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            
+
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.previewView.surfaceProvider)
                 }
-            
+
             val imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .apply {
                     setAnalyzer(cameraExecutor, QRCodeAnalyzer(
-                        onQRCodeDetected = { path -> 
+                        onQRCodeDetected = { path ->
                             if (isScanning) {
                                 isScanning = false
-                                viewModel.onQRCodeScanned(path)
+                                viewModel.onQrCodeScanned(path)
                             }
                         },
                         onError = { error ->
-                            viewModel.onScanError(error)
+                            viewModel.onScanError(error.message ?: "")
                         }
                     ))
                 }
-            
+
             try {
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(
@@ -114,51 +119,46 @@ class ScannerFragment : Fragment() {
                     preview,
                     imageAnalyzer
                 )
-                
+
                 // Проверяем поддержку вспышки
-                binding.toggleFlashButton.visibility = 
+                binding.toggleFlashButton.visibility =
                     if (camera?.cameraInfo?.hasFlashUnit() == true) View.VISIBLE
                     else View.GONE
-                
+
             } catch (e: Exception) {
-                viewModel.onScanError(e)
+                viewModel.onScanError(e.message ?: "")
             }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     private fun toggleFlash() {
         camera?.cameraControl?.enableTorch(
-            camera?.cameraInfo?.torchState?.value != TorchState.ON
+            camera?.cameraInfo?.torchState?.value != androidx.camera.core.TorchState.ON
         )
     }
 
     private fun observeViewModel() {
-        viewModel.scanResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is ScanResult.Success -> {
-                    findNavController().navigate(
-                        ScannerFragmentDirections.actionScannerToViewer(result.path)
-                    )
-                    viewModel.onNavigationHandled()
-                    isScanning = true
-                }
-                is ScanResult.Error -> {
-                    showError(result.message)
-                    isScanning = true
-                }
-                null -> {
-                    isScanning = true
-                }
+        viewModel.navigateToFolder.observe(viewLifecycleOwner) { path ->
+            path?.let {
+                findNavController().navigate(
+                    ScannerFragmentDirections.actionScannerToViewer(it)
+                )
+                viewModel.onNavigationHandled()
+                isScanning = true
             }
         }
 
-        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-            binding.scannerOverlay.visibility = if (isLoading) View.INVISIBLE else View.VISIBLE
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        viewModel.error.observe(viewLifecycleOwner) { error ->
+            error?.let {
+                showError(it)
+                viewModel.onErrorHandled()
+                isScanning = true
+            }
         }
 
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let { showError(it) }
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.scannerOverlay.visibility = if (isLoading) View.INVISIBLE else View.VISIBLE
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
     }
 
@@ -166,6 +166,7 @@ class ScannerFragment : Fragment() {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
             .setAction(R.string.retry) {
                 isScanning = true
+                startCamera()
             }
             .show()
     }

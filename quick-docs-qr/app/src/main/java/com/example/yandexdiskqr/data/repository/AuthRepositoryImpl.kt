@@ -1,6 +1,6 @@
+// ./src/main/java/com/example/yandexdiskqr/data/repository/AuthRepositoryImpl.kt
 package com.example.yandexdiskqr.data.repository
 
-import com.example.yandexdiskqr.data.local.AuthDataStore
 import com.example.yandexdiskqr.data.model.AuthToken
 import com.example.yandexdiskqr.di.Constants
 import com.example.yandexdiskqr.domain.repository.AuthRepository
@@ -14,12 +14,11 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val authDataStore: AuthDataStore
+    private val secureStorage: SecureStorageImpl
 ) : AuthRepository {
 
     override suspend fun getAuthToken(): String = withContext(Dispatchers.IO) {
-        val token = authDataStore.getAccessToken()
-        // При необходимости можно проверить "протух" ли токен (сравнив expiresIn), но пока упрощённо:
+        val token = secureStorage.getToken()
         if (token.isNullOrEmpty()) {
             throw IllegalStateException("Unauthorized: no access token found")
         }
@@ -31,33 +30,26 @@ class AuthRepositoryImpl @Inject constructor(
             grantType = "authorization_code",
             code = code
         )
-        authDataStore.saveTokens(
-            accessToken = tokenResponse.accessToken,
-            refreshToken = tokenResponse.refreshToken,
-            expiresIn = tokenResponse.expiresIn,
-            tokenType = tokenResponse.tokenType
-        )
+        secureStorage.saveToken(tokenResponse.accessToken)
+        secureStorage.saveRefreshToken(tokenResponse.refreshToken)
+        // Если необходимо сохранить expiresIn и tokenType, адаптируйте SecureStorageImpl
     }
 
     override suspend fun refreshToken(): AuthToken {
-        val refreshToken = authDataStore.getRefreshToken()
+        val refreshToken = secureStorage.getRefreshToken()
             ?: throw IllegalStateException("Unauthorized: no refresh token found")
 
         val tokenResponse = requestToken(
             grantType = "refresh_token",
             refreshToken = refreshToken
         )
-        authDataStore.saveTokens(
-            accessToken = tokenResponse.accessToken,
-            refreshToken = tokenResponse.refreshToken,
-            expiresIn = tokenResponse.expiresIn,
-            tokenType = tokenResponse.tokenType
-        )
+        secureStorage.saveToken(tokenResponse.accessToken)
+        secureStorage.saveRefreshToken(tokenResponse.refreshToken)
         return tokenResponse
     }
 
     override suspend fun clearAuth() {
-        authDataStore.clearTokens()
+        secureStorage.clearTokens()
     }
 
     /**

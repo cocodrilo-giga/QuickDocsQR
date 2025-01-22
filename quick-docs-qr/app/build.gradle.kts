@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
     id("com.google.dagger.hilt.android")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -66,6 +67,9 @@ dependencies {
 
     // Яндекс.Диск SDK
     implementation("com.yandex.android:disk-restapi-sdk:1.03")
+
+    // OkHttp (Добавьте эту строку)
+    implementation("com.squareup.okhttp:okhttp:2.7.5")
 
     // QR code scanning
     implementation("com.google.mlkit:barcode-scanning:17.3.0")

@@ -1,3 +1,4 @@
+// ./src/main/java/com/example/yandexdiskqr/presentation/folders/FoldersViewModel.kt
 package com.example.yandexdiskqr.presentation.folders
 
 import android.graphics.Bitmap
