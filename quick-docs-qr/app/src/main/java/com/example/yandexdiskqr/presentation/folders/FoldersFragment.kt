@@ -1,4 +1,3 @@
-// ./src/main/java/com/example/yandexdiskqr/presentation/folders/FoldersFragment.kt
 package com.example.yandexdiskqr.presentation.folders
 
 import android.graphics.Bitmap

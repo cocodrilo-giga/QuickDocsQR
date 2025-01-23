@@ -1,4 +1,3 @@
-// ./src/main/java/com/example/yandexdiskqr/presentation/folders/FoldersViewModel.kt
 package com.example.yandexdiskqr.presentation.folders
 
 import android.graphics.Bitmap
@@ -7,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yandexdiskqr.data.model.YandexDiskFile
-import com.example.yandexdiskqr.data.model.YandexDiskFolder
 import com.example.yandexdiskqr.domain.usecase.GenerateQRCodeUseCase
 import com.example.yandexdiskqr.domain.usecase.GetFolderContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

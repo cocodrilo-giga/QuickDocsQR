@@ -4,7 +4,7 @@
         android:id="@+id/foldersFragment"
         android:icon="@drawable/ic_folder"
         android:title="@string/folders" />
-    
+
     <item
         android:id="@+id/scannerFragment"
         android:icon="@drawable/ic_qr_scanner"

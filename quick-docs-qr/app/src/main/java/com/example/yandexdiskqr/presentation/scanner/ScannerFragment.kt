@@ -1,4 +1,3 @@
-// ./src/main/java/com/example/yandexdiskqr/presentation/scanner/ScannerFragment.kt
 package com.example.yandexdiskqr.presentation.scanner
 
 import android.Manifest
@@ -10,7 +9,6 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
