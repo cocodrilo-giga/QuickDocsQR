@@ -4,6 +4,7 @@ package com.example.yandexdiskqr.presentation.auth
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.yandexdiskqr.databinding.ActivityAuthBinding
@@ -23,19 +24,18 @@ class AuthActivity : AppCompatActivity() {
 
         setupViews()
         observeViewModel()
-        
+
         // Проверяем, есть ли сохраненный токен
         viewModel.checkAuth()
+
+        // Обработка редиректа, если активность была запущена с данным intent
+        handleAuthRedirect(intent)
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        intent?.data?.let { uri ->
-            // Получаем код авторизации из URI
-            uri.getQueryParameter("code")?.let { code ->
-                viewModel.exchangeCodeForToken(code)
-            }
-        }
+        setIntent(intent) // Важно установить новый intent
+        handleAuthRedirect(intent)
     }
 
     private fun setupViews() {
@@ -67,11 +67,29 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun startMainActivity() {
+        Log.d("AuthActivity", "Starting MainActivity")
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
     private fun showError(message: String) {
-        // Показываем ошибку пользователю
+        Log.e("AuthActivity", "Authentication error: $message")
+        // Показываем ошибку пользователю, например, через Toast или Snackbar
+    }
+
+    private fun handleAuthRedirect(intent: Intent?) {
+        intent?.data?.let { uri ->
+            Log.d("AuthActivity", "Redirect URI received: $uri")
+            val code = uri.getQueryParameter("code")
+            if (code != null) {
+                Log.d("AuthActivity", "Authorization code: $code")
+                viewModel.exchangeCodeForToken(code)
+            } else {
+                val error = uri.getQueryParameter("error")
+                val errorDescription = uri.getQueryParameter("error_description")
+                Log.e("AuthActivity", "Authorization error: $error - $errorDescription")
+                showError("Ошибка авторизации: $error - $errorDescription")
+            }
+        }
     }
 }
