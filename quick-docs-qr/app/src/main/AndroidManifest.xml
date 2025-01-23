@@ -40,7 +40,16 @@
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true">
-            <!-- Удалите или измените intent-filter, если это необходимо -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="ydiskqr"
+                    android:host="auth" />
+            </intent-filter>
         </activity>
 
     </application>
