@@ -8,7 +8,7 @@ import java.nio.charset.Charset
 import javax.inject.Inject
 
 class GenerateQRCodeUseCase @Inject constructor() {
-    operator fun invoke(folderPath: String, width: Int = 512, height: Int = 512): Result<Bitmap> = runCatching {
+    operator fun invoke(text: String, width: Int = 512, height: Int = 512): Result<Bitmap> = runCatching {
         val writer = QRCodeWriter()
 
         // Определение хинтов для кодировки
@@ -18,7 +18,7 @@ class GenerateQRCodeUseCase @Inject constructor() {
         )
 
         // Генерация битовой матрицы с хинтами
-        val bitMatrix = writer.encode(folderPath, BarcodeFormat.QR_CODE, width, height, hints)
+        val bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, width, height, hints)
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
 
         for (x in 0 until width) {

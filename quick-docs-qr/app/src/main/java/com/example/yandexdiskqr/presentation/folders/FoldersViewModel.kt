@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yandexdiskqr.data.model.YandexDiskFile
+import com.example.yandexdiskqr.domain.usecase.CreateShareableLinkUseCase
 import com.example.yandexdiskqr.domain.usecase.GenerateQRCodeUseCase
 import com.example.yandexdiskqr.domain.usecase.GetFolderContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FoldersViewModel @Inject constructor(
     private val getFolderContentUseCase: GetFolderContentUseCase,
+    private val createShareableLinkUseCase: CreateShareableLinkUseCase,
     private val generateQRCodeUseCase: GenerateQRCodeUseCase
 ) : ViewModel() {
 
@@ -27,7 +29,7 @@ class FoldersViewModel @Inject constructor(
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
-    private val _isLoading = MutableLiveData<Boolean>()
+    private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
     fun loadFolders() {
@@ -45,14 +47,31 @@ class FoldersViewModel @Inject constructor(
     }
 
     fun generateQRCode(folderPath: String) {
+        if (folderPath.isBlank()) {
+            _error.value = "Введите путь к папке!"
+            return
+        }
+        _isLoading.value = true
+
         viewModelScope.launch {
-            generateQRCodeUseCase(folderPath)
-                .onSuccess { bitmap ->
-                    _qrCodeData.value = bitmap to folderPath
+            // Создание публичной ссылки на папку
+            val shareableLinkResult = createShareableLinkUseCase(folderPath)
+            shareableLinkResult
+                .onSuccess { link ->
+                    // Генерация QR-кода на основе ссылки
+                    val qrResult = generateQRCodeUseCase(link)
+                    qrResult
+                        .onSuccess { bitmap ->
+                            _qrCodeData.value = bitmap to link
+                        }
+                        .onFailure { exception ->
+                            _error.value = exception.message
+                        }
                 }
                 .onFailure { exception ->
                     _error.value = exception.message
                 }
+            _isLoading.value = false
         }
     }
 

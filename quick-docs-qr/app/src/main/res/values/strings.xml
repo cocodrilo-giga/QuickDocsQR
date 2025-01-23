@@ -28,4 +28,10 @@
     <string name="error_server">Ошибка сервера. Попробуйте позже</string>
     <string name="error_network">Проверьте подключение к интернету</string>
     <string name="error_unknown">Произошла неизвестная ошибка</string>
+
+    <!-- Добавленные строки для QRDialog -->
+    <string name="qr_code_image">QR-код</string>
+    <string name="share">Поделиться</string>
+    <string name="share_link">Поделиться ссылкой</string>
+    <string name="qr_code_image_content_description">Изображение QR-кода</string>
 </resources>

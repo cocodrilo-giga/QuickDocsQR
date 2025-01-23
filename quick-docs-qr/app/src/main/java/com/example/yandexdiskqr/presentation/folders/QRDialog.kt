@@ -1,38 +1,34 @@
 package com.example.yandexdiskqr.presentation.folders
 
 import android.app.Dialog
-import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import com.example.yandexdiskqr.R
 import com.example.yandexdiskqr.databinding.DialogQrCodeBinding
-import java.io.File
-import java.io.FileOutputStream
 
 class QRDialog : DialogFragment() {
     private var _binding: DialogQrCodeBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var qrBitmap: Bitmap
-    private lateinit var folderPath: String
+    private lateinit var shareableLink: String
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogQrCodeBinding.inflate(LayoutInflater.from(context))
 
         arguments?.let { bundle ->
             qrBitmap = bundle.getParcelable(ARG_QR_CODE) ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-            folderPath = bundle.getString(ARG_FOLDER_PATH) ?: ""
+            shareableLink = bundle.getString(ARG_SHAREABLE_LINK) ?: ""
         }
 
         binding.qrCodeImage.setImageBitmap(qrBitmap)
-        binding.folderPathText.text = folderPath
+        binding.shareLinkText.text = shareableLink
 
         binding.shareButton.setOnClickListener {
-            shareBitmap(qrBitmap)
+            shareLink(shareableLink)
         }
 
         return AlertDialog.Builder(requireContext())
@@ -42,24 +38,12 @@ class QRDialog : DialogFragment() {
             .create()
     }
 
-    private fun shareBitmap(bitmap: Bitmap) {
-        // Сохранение Bitmap во временный файл
-        val cachePath = File(requireContext().cacheDir, "images")
-        cachePath.mkdirs()
-        val file = File(cachePath, "qr_code.png")
-        FileOutputStream(file).use {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+    private fun shareLink(link: String) {
+        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(android.content.Intent.EXTRA_TEXT, "Ссылка на папку: $link")
         }
-        val fileUri = FileProvider.getUriForFile(requireContext(), "${requireContext().packageName}.provider", file)
-
-        // Создание и запуск Intent для "Поделиться"
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/png"
-            putExtra(Intent.EXTRA_STREAM, fileUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            putExtra(Intent.EXTRA_TEXT, "QR-код для папки $folderPath")
-        }
-        startActivity(Intent.createChooser(shareIntent, "Поделиться QR-кодом"))
+        startActivity(android.content.Intent.createChooser(shareIntent, "Поделиться ссылкой"))
     }
 
     override fun onDestroyView() {
@@ -69,13 +53,13 @@ class QRDialog : DialogFragment() {
 
     companion object {
         private const val ARG_QR_CODE = "qr_code"
-        private const val ARG_FOLDER_PATH = "folder_path"
+        private const val ARG_SHAREABLE_LINK = "shareable_link"
 
-        fun newInstance(qrCode: Bitmap, folderPath: String): QRDialog {
+        fun newInstance(qrCode: Bitmap, shareableLink: String): QRDialog {
             return QRDialog().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_QR_CODE, qrCode)
-                    putString(ARG_FOLDER_PATH, folderPath)
+                    putString(ARG_SHAREABLE_LINK, shareableLink)
                 }
             }
         }

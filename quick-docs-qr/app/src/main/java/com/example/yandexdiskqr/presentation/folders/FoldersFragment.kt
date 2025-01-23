@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.yandexdiskqr.databinding.FragmentFoldersBinding
 import com.google.android.material.snackbar.Snackbar
@@ -60,16 +59,20 @@ class FoldersFragment : Fragment() {
         }
 
         viewModel.qrCodeData.observe(viewLifecycleOwner) { qrData ->
-            qrData?.let { (bitmap, path) ->
-                showQRCodeDialog(bitmap, path)
+            qrData?.let { (bitmap, link) ->
+                showQRCodeDialog(bitmap, link)
                 viewModel.clearQrCodeData()
             }
         }
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
     }
 
-    private fun showQRCodeDialog(bitmap: Bitmap, path: String) {
+    private fun showQRCodeDialog(bitmap: Bitmap, link: String) {
         // Создайте диалог для отображения QR-кода
-        QRDialog.newInstance(bitmap, path).show(parentFragmentManager, "QRDialog")
+        QRDialog.newInstance(bitmap, link).show(parentFragmentManager, "QRDialog")
     }
 
     override fun onDestroyView() {

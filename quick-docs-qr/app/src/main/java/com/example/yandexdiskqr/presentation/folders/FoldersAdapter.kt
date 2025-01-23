@@ -32,6 +32,7 @@ class FoldersAdapter(
         fun bind(folder: YandexDiskFile) {
             binding.folderName.text = folder.name
             binding.root.setOnClickListener { onFolderClick(folder) }
+            binding.generateQrButton.setOnClickListener { onFolderClick(folder) }
         }
     }
 

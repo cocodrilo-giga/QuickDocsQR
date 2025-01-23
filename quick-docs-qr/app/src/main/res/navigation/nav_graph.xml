@@ -8,9 +8,7 @@
         android:id="@+id/foldersFragment"
         android:name="com.example.yandexdiskqr.presentation.folders.FoldersFragment"
         android:label="@string/folders">
-        <action
-            android:id="@+id/action_folders_to_qr"
-            app:destination="@id/qrGeneratorFragment" />
+        <!-- Нет необходимости добавлять action для QRGeneratorFragment, так как генерация происходит внутри FoldersFragment -->
     </fragment>
 
     <fragment
