@@ -6,15 +6,15 @@ import com.example.yandexdiskqr.data.model.YandexDiskFile
 import com.example.yandexdiskqr.data.model.YandexDiskFolder
 import com.example.yandexdiskqr.domain.repository.AuthRepository
 import com.example.yandexdiskqr.domain.repository.YandexDiskRepository
+import com.squareup.okhttp.OkHttpClient
+import com.yandex.disk.rest.Credentials
 import com.yandex.disk.rest.ResourcesArgs
 import com.yandex.disk.rest.RestClient
-import com.yandex.disk.rest.Credentials // Убедитесь, что импорт правильный
 import com.yandex.disk.rest.exceptions.ServerIOException
 import com.yandex.disk.rest.exceptions.http.UnauthorizedException
 import com.yandex.disk.rest.json.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.squareup.okhttp.OkHttpClient // Импорт OkHttp2
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
@@ -101,9 +101,8 @@ class YandexDiskRepositoryImpl @Inject constructor(
      * Реализуйте логику получения пользователя в соответствии с вашим API.
      */
     private suspend fun getUserFromToken(token: String): String {
-        // Примерный метод для получения информации о пользователе
-        // Замените URL и логику на соответствующие вашему API
-        val url = URL("https://api.yandex.com/disk/v1/user/info") // Замените на правильный URL
+        // Правильный URL для получения информации о пользователе
+        val url = URL("https://login.yandex.ru/info?format=json")
         val connection = withContext(Dispatchers.IO) { url.openConnection() as HttpURLConnection }
 
         try {
@@ -118,7 +117,7 @@ class YandexDiskRepositoryImpl @Inject constructor(
 
             val response = connection.inputStream.bufferedReader().use { it.readText() }
             val jsonResponse = JSONObject(response)
-            return jsonResponse.getString("user_id") // Замените на фактическое поле в ответе
+            return jsonResponse.getString("id") // Поле "id" содержит уникальный идентификатор пользователя
         } catch (e: Exception) {
             throw IOException("Error fetching user info: ${e.message}", e)
         } finally {
