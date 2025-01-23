@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yandexdiskqr.data.model.YandexDiskFile
 import com.example.yandexdiskqr.data.model.YandexDiskFolder
 import com.example.yandexdiskqr.domain.usecase.GenerateQRCodeUseCase
 import com.example.yandexdiskqr.domain.usecase.GetFolderContentUseCase
@@ -19,8 +20,8 @@ class FoldersViewModel @Inject constructor(
     private val generateQRCodeUseCase: GenerateQRCodeUseCase
 ) : ViewModel() {
 
-    private val _folders = MutableLiveData<List<YandexDiskFolder>>()
-    val folders: LiveData<List<YandexDiskFolder>> = _folders
+    private val _folders = MutableLiveData<List<YandexDiskFile>>()
+    val folders: LiveData<List<YandexDiskFile>> = _folders
 
     private val _qrCodeData = MutableLiveData<Pair<Bitmap, String>?>()
     val qrCodeData: LiveData<Pair<Bitmap, String>?> = _qrCodeData
@@ -36,7 +37,7 @@ class FoldersViewModel @Inject constructor(
             _isLoading.value = true
             getFolderContentUseCase("/")
                 .onSuccess { folder ->
-                    _folders.value = listOf(folder)
+                    _folders.value = folder.files // Передаем список файлов (подкаталогов)
                 }
                 .onFailure { exception ->
                     _error.value = exception.message

@@ -63,6 +63,7 @@ class FoldersFragment : Fragment() {
         viewModel.qrCodeData.observe(viewLifecycleOwner) { qrData ->
             qrData?.let { (bitmap, path) ->
                 showQRCodeDialog(bitmap, path)
+                viewModel.clearQrCodeData()
             }
         }
     }

@@ -10,7 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="6dp">
 
         <ImageView
             android:id="@+id/folderIcon"
@@ -30,8 +30,8 @@
             android:layout_marginEnd="16dp"
             android:textAppearance="?attr/textAppearanceSubtitle1"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/generateQrButton"
-            app:layout_constraintStart_toEndOf="@+id/folderIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/folderIcon"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
